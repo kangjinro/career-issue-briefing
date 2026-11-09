@@ -99,7 +99,7 @@ a.src:hover{text-decoration:underline}
     <div class="txt">
     <h1>시사 이슈 브리핑</h1>
     <p class="by">배포: 상일고 진로쌤</p>
-    <p class="upd">매일 오전 7시 업데이트됩니다 · 날짜를 눌러 지난 브리핑을 볼 수 있어요</p>
+    <p class="upd">매일 오전 8시 업데이트됩니다 · 날짜를 눌러 지난 브리핑을 볼 수 있어요</p>
     </div>
     <section class="cal" aria-label="브리핑 달력">
       <div class="cal-head">
@@ -139,7 +139,7 @@ a.src:hover{text-decoration:underline}
       '<a class="src" href="'+esc(it.url)+'" target="_blank" rel="noopener">'+(yt?"▶ 영상 보러 가기":"📰 기사 원문 보기")+' ↗</a>'+
       (yt&&it.rel?'<div class="rel"><b>📰 함께 읽을 관련 뉴스</b><a href="'+esc(it.rel.url)+'" target="_blank" rel="noopener">'+esc(it.rel.t)+' ↗</a><small>'+esc(it.rel.src)+(it.rel.date?' · '+esc(it.rel.date):'')+' · 빅카인즈 검색</small></div>':'')+
       '</div></details>';}
-  function rangeText(d){const r=d.range||""; if(!r) return ""; return r.indexOf("하루")>=0?r:"전일 오전 7시부터 24시간 기준";}
+  function rangeText(d){const r=d.range||""; if(!r) return ""; if(r.indexOf("하루")>=0) return r; const m=r.match(/(\d{1,2}):00\s*~/); return "전일 오전 "+(m?parseInt(m[1],10):8)+"시부터 24시간 기준";}
   function render(d){
     const [y,m,dd]=d.date.split("-").map(Number); const a=d.anniv||{};
     let h='<h2 class="dtitle">'+m+'월 '+dd+'일 ('+esc(d.dow)+') 시사 이슈 브리핑</h2>'+
