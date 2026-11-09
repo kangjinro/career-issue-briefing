@@ -79,6 +79,11 @@ details.yt .blk b{color:var(--yt)}
 a.src{display:inline-block;margin-top:8px;font-size:.88rem;color:var(--accent);text-decoration:none;font-weight:600}
 details.yt a.src{color:var(--yt)}
 a.src:hover{text-decoration:underline}
+.rel{margin-top:12px;padding:10px 12px;border-radius:10px;background:var(--accent-soft);font-size:.9rem}
+.rel b{display:block;font-size:.8rem;color:var(--accent);margin-bottom:2px}
+.rel a{color:var(--ink);font-weight:600;text-decoration:none}
+.rel a:hover{text-decoration:underline}
+.rel small{display:block;color:var(--muted);font-size:.78rem;margin-top:2px}
 .empty{background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:14px 16px;color:var(--muted);font-size:.92rem}
 .foot{margin-top:28px;font-size:.78rem;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
 .loading{color:var(--muted);padding:20px 0}
@@ -126,7 +131,9 @@ a.src:hover{text-decoration:underline}
       '<div class="blk"><b>탐구 이슈</b><ul>'+qs.map(q=>'<li>'+esc(q)+'</li>').join("")+'</ul></div>'+
       '<div class="blk"><b>쟁점 이슈 (토론해 보기)</b>'+debate(it.d||"")+'</div>'+
       '<div class="blk"><b>관련 고등학교 과목</b>'+chips(it.sub)+'</div>'+
-      '<a class="src" href="'+esc(it.url)+'" target="_blank" rel="noopener">'+(yt?"▶ 영상 보러 가기":"📰 기사 원문 보기")+' ↗</a></div></details>';}
+      '<a class="src" href="'+esc(it.url)+'" target="_blank" rel="noopener">'+(yt?"▶ 영상 보러 가기":"📰 기사 원문 보기")+' ↗</a>'+
+      (yt&&it.rel?'<div class="rel"><b>📰 함께 읽을 관련 뉴스</b><a href="'+esc(it.rel.url)+'" target="_blank" rel="noopener">'+esc(it.rel.t)+' ↗</a><small>'+esc(it.rel.src)+(it.rel.date?' · '+esc(it.rel.date):'')+' · 빅카인즈 검색</small></div>':'')+
+      '</div></details>';}
   function rangeText(d){const r=d.range||""; if(!r) return ""; return r.indexOf("하루")>=0?r:"전일 오전 7시부터 24시간 기준";}
   function render(d){
     const [y,m,dd]=d.date.split("-").map(Number); const a=d.anniv||{};
