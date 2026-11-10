@@ -17,7 +17,7 @@ def check(d):
         if k not in d:
             raise SystemExit(f"필수 항목 없음: {k}")
     for it in d["news"] + d.get("yt", []):
-        for k in ("t", "url", "sum", "q", "d", "sub"):
+        for k in ("t", "url", "sum", "q", "d", "sub", "cat"):
             if not it.get(k):
                 raise SystemExit(f"항목 '{it.get('t')}' 에 {k} 없음")
 

@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>시사 이슈 브리핑</title>
 <meta name="description" content="고등학생을 위한 매일 아침 진로·사회 이슈 브리핑">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -90,6 +92,166 @@ a.src:hover{text-decoration:underline}
 .empty{background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:14px 16px;color:var(--muted);font-size:.92rem}
 .foot{margin-top:28px;font-size:.78rem;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
 .loading{color:var(--muted);padding:20px 0}
+
+/* ---------- 검색 ---------- */
+.search{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 20px}
+.search .row{display:grid;grid-template-columns:repeat(3,1fr) 2fr;gap:8px}
+.search label{display:flex;flex-direction:column;font-size:.75rem;color:var(--muted);gap:3px;min-width:0}
+.search select,.search input[type=search]{font:inherit;font-size:.9rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 9px;min-width:0;width:100%}
+.search .btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.btn{font:inherit;font-size:.88rem;font-weight:700;border-radius:999px;padding:8px 16px;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.btn.pri{background:var(--green);border-color:var(--green);color:#fff}
+.btn.sm{font-size:.8rem;padding:5px 12px}
+.res-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 10px}
+.res-head h2{font-size:1.2rem;margin:0}
+.res-head small{color:var(--muted)}
+.ritem{display:flex;gap:10px;align-items:flex-start}
+.ritem details{flex:1;min-width:0}
+.scrap-chk{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.7rem;color:var(--muted);padding-top:14px;cursor:pointer;user-select:none}
+.scrap-chk input{width:20px;height:20px;accent-color:var(--green);cursor:pointer;margin:0}
+.badge{display:inline-block;font-size:.72rem;font-weight:700;border-radius:999px;padding:1px 8px;margin-right:4px;background:var(--green-soft);color:var(--green-ink)}
+.badge.d{background:var(--chip);color:var(--muted)}
+.scrapbar{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--green);color:#fff;padding:10px 16px;display:none;box-shadow:0 -4px 16px rgba(0,0,0,.18)}
+.scrapbar.on{display:block}
+.scrapbar .in{max-width:868px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.scrapbar .btn{border-color:#fff}
+body.has-bar .wrap{padding-bottom:90px}
+/* 스크랩 모음 (PDF로 저장되는 영역) — 다크 모드에서도 흰 종이처럼 보이도록 색을 고정 */
+.scrap-sheet{--card:#fff;--bg:#fff;--ink:#1f2430;--muted:#5d6475;--line:#e3e6ef;--accent:#2f5bea;--accent-soft:#eaf0ff;--chip:#f0f2f7;--pro:#0f7b54;--pro-soft:#e8f7f0;--pro-line:#bfe6d4;--con:#b4233c;--con-soft:#fdecef;--con-line:#f3c5cf;--green-soft:#d4e9e2;--green-ink:#00573a;
+  background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:16px}
+.scrap-sheet h2{font-size:1.25rem;margin:0 0 2px;color:#00573a}
+.scrap-sheet .by2{margin:0;font-size:.8rem;color:var(--muted)}
+.stu{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 14px}
+.stu label{display:flex;align-items:center;gap:6px;font-size:.88rem;font-weight:700}
+.stu input{font:inherit;font-size:.9rem;border:1px solid var(--line);border-radius:8px;padding:6px 9px;width:9em;background:#fff;color:var(--ink)}
+.sitem{border-top:2px solid #00704A;padding:12px 0 14px}
+.sitem h3{font-size:1rem;margin:6px 0 6px}
+.sitem .blk b{color:#00573a}
+.sitem .url{font-size:.75rem;color:var(--muted);word-break:break-all}
+.sitem textarea{display:block;width:100%;min-height:4.5em;font:inherit;font-size:.9rem;border:1px solid var(--line);border-radius:8px;padding:8px;background:#fff;color:var(--ink)}
+.sitem .rm{float:right}
+.save-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:14px 0 0}
+.save-note{font-size:.8rem;color:var(--muted);text-align:center;margin:6px 0 0}
+@media print{.sitem .blk,.sitem h3{break-inside:avoid}}
+@media (max-width:639px){.search .row{grid-template-columns:1fr 1fr}.search .row label.kw{grid-column:1/-1}}
+
+/* ==========================================================================
+   PdfKit 스타일 (pdf-save-load-ej)
+   색은 앱에 맞게 아래 변수만 바꾸면 됨 (:root에 다시 선언해도 됨)
+   ========================================================================== */
+:root{
+  --pdfkit-accent:#00704A;       /* 저장하기 버튼 */
+  --pdfkit-accent-dark:#00573a;
+  --pdfkit-ink:#00573a;          /* 제목 글자 */
+  --pdfkit-muted:#6b7480;
+  --pdfkit-border:#c9d3e0;
+  --pdfkit-tip-bg:#fff8e1;
+}
+
+/* ---------- 아이폰·아이패드 저장 안내 (PDF 버튼 아래) ---------- */
+.pdfkit-guide{
+  width:100%;
+  max-width:460px;
+  margin:10px auto 0;
+  background:#fff;
+  border:1px solid var(--pdfkit-border);
+  border-radius:8px;
+  padding:10px 14px;
+  font-size:.8rem;
+  color:#3d4a5c;
+  line-height:1.55;
+  text-align:left;
+}
+.pdfkit-guide-ttl{display:block;color:var(--pdfkit-ink);font-size:.84rem;font-weight:800;margin-bottom:4px;}
+.pdfkit-guide ol{margin:0;padding-left:18px;}
+.pdfkit-guide li + li{margin-top:3px;}
+
+/* ---------- 미리보기 창 (화면에 보이고, 인쇄도 이것만 됨) ---------- */
+body.pdfkit-previewing{overflow:hidden;}
+.pdfkit-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  background:rgba(20,30,50,.55);
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:14px 10px 40px;
+}
+.pdfkit-overlay.open{display:block;}
+.pdfkit-box{
+  max-width:840px;
+  margin:0 auto;
+  background:#f2f5fa;
+  border-radius:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+.pdfkit-bar{
+  position:sticky;
+  top:-14px;
+  z-index:2;
+  background:#fff;
+  border-radius:12px 12px 0 0;
+  border-bottom:1px solid var(--pdfkit-border);
+  padding:12px 14px;
+}
+.pdfkit-bar-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.pdfkit-title{font-weight:800;color:var(--pdfkit-ink);font-size:1rem;}
+.pdfkit-actions{display:flex;gap:8px;}
+.pdfkit-actions button{
+  font-family:inherit;
+  font-weight:800;
+  font-size:.92rem;
+  padding:10px 18px;
+  border-radius:999px;
+  cursor:pointer;
+}
+.pdfkit-cancel{background:#fff;color:var(--pdfkit-muted);border:1.5px solid var(--pdfkit-border);}
+.pdfkit-save{background:var(--pdfkit-accent);color:#fff;border:none;box-shadow:0 3px 10px rgba(0,0,0,.18);}
+.pdfkit-save:hover{background:var(--pdfkit-accent-dark);}
+.pdfkit-tip{margin:8px 0 0;font-size:.8rem;color:#5a4a1c;background:var(--pdfkit-tip-bg);border-radius:6px;padding:7px 10px;line-height:1.5;}
+.pdfkit-body{padding:14px;}
+.pdfkit-data-note{margin:0;padding:0 14px 14px;font-size:.76rem;color:var(--pdfkit-muted);text-align:center;}
+
+/* 입력칸 대신 들어가는 글자 상자 */
+.pdfkit-value{
+  white-space:pre-wrap;
+  word-break:break-word;
+  overflow-wrap:anywhere;
+  border:1.5px solid var(--pdfkit-border);
+  border-radius:7px;
+  background:#fbfcfe;
+}
+.pdfkit-textarea{display:block;width:100%;padding:9px 10px;min-height:2.6em;font-size:.92rem;}
+.pdfkit-input{display:inline-block;flex:1 1 auto;min-width:6em;padding:5px 9px;font-size:.9rem;}
+.pdfkit-check{display:inline-block;min-width:1.2em;font-size:1rem;}
+
+/* 「저장한 PDF 불러오기」가 읽는 옅은 데이터 블록 (인쇄할 때 마지막 장에만) */
+.pdfkit-data{display:none;}
+.pdfkit-data-msg{margin:0 0 8px;font-size:11px;color:#8a93a3;}
+.pdfkit-data-code{
+  font-family:"Courier New",Courier,monospace;
+  font-size:7px;
+  line-height:1.3;
+  color:#bdbdbd;
+  word-break:break-all;
+  font-variant-ligatures:none;
+}
+
+@media print{
+  @page{size:A4;margin:12mm 10mm;}
+  body.pdfkit-previewing{overflow:visible;background:#fff !important;}
+  body.pdfkit-previewing > *:not(#pdfkitOverlay){display:none !important;}
+  body.pdfkit-previewing .pdfkit-overlay{display:block !important;position:static;background:none;padding:0;overflow:visible;}
+  .pdfkit-box{max-width:none;background:#fff;box-shadow:none;border-radius:0;}
+  .pdfkit-bar,.pdfkit-data-note{display:none !important;}
+  .pdfkit-body{padding:0;}
+  .pdfkit-body *{box-shadow:none !important;}
+  .pdfkit-body tr,.pdfkit-body .pdfkit-textarea{break-inside:avoid;}
+  .pdfkit-data{display:block;break-before:page;}
+  .pdfkit-body *,.pdfkit-data *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+}
+
 @media (max-width:560px){.body{padding:0 14px 14px}.debate{grid-template-columns:1fr}.banner h1{font-size:1.3rem}.day{padding:6px 0 12px;font-size:.88rem}}
 </style>
 </head>
@@ -113,8 +275,279 @@ a.src:hover{text-decoration:underline}
   </div>
 </header>
 <div class="wrap">
+  <section class="search" aria-label="브리핑 검색">
+    <div class="row">
+      <label>분야<select id="fCat"><option value="">전체</option><option>과학기술</option><option>환경</option><option>경제</option><option>사회</option><option>정치외교</option><option>교육</option><option>보건의료</option><option>예술체육</option></select></label>
+      <label>월<select id="fMonth"><option value="">전체</option></select></label>
+      <label>과목연계<select id="fSub"><option value="">전체</option></select></label>
+      <label class="kw">검색어<input type="search" id="fKw" placeholder="예: 인공지능, 기후, 의대" enterkeyhint="search"></label>
+    </div>
+    <div class="btns">
+      <button type="button" class="btn pri" id="doSearch">🔍 검색</button>
+      <button type="button" class="btn" id="resetSearch">↺ 검색 초기화</button>
+      <button type="button" class="btn" id="myScrap">📌 나의 스크랩 <b id="myScrapN">0</b></button>
+    </div>
+  </section>
   <main id="brief"><p class="loading">불러오는 중…</p></main>
 </div>
+<div class="scrapbar" id="scrapBar"><div class="in"><span>📌 스크랩 <b id="scrapCount">0</b>개</span><button type="button" class="btn sm" id="openScrap">스크랩 보기 · PDF 저장</button></div></div>
+<input type="file" id="loadInput" accept="application/pdf" style="display:none">
+<div id="guideTpl" data-pdfkit-guide hidden></div>
+<script>
+/* ==========================================================================
+   PdfKit — 「PDF로 저장하기」 + 「저장한 PDF 불러오기」 모듈 (pdf-save-load-ej)
+
+   저장: 미리보기 창 → [저장하기] → 브라우저 인쇄 창("PDF로 저장")에서
+         학생이 저장 위치를 직접 고름. 아이폰·아이패드는 공유 → 파일에 저장.
+   불러오기: 인쇄된 PDF 마지막 장의 옅은 데이터 블록을 pdf.js로 읽어 다시 채움.
+   파일명: "학번 이름 탭명" (예: "20101 홍길동 독서 한 장에 담기")
+
+   필요: pdf.js 3.11.174 (불러오기용) — <head>에 아래 두 줄
+     (pdf.min.js 와 worker 설정은 <head> 에 들어 있음)
+   ========================================================================== */
+const PdfKit = (() => {
+  // ▼ 앱마다 바꾸기: 다른 앱에서 저장한 PDF를 잘못 불러오지 않도록 하는 앱 고유 표식
+  //   (영문 대문자·숫자·하이픈만. 기존 앱을 고칠 때는 예전 표식을 그대로 써야
+  //    이미 저장된 PDF도 계속 불러올 수 있음)
+  const DATA_MARKER = '###SISABRIEF-DATA###';
+  const DATA_END = '###END-DATA###';
+
+  const originalTitle = document.title;
+
+  // ---------- small helpers ----------
+  function $(elOrId){
+    return typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
+  }
+  function sanitize(str){
+    return String(str || '').replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, ' ').trim();
+  }
+  // "① 독서 한 장에 담기" / "📄 2. 주제 탐구" → "독서 한 장에 담기" / "주제 탐구"
+  function cleanTabName(label){
+    const noEmoji = String(label || '').replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}️‍]/gu, '');
+    return sanitize(noEmoji.replace(/^[\s①-⑳⓪❶-➓\d.)\]:·-]+/, ''));
+  }
+  function activeTabName(){
+    const btn = document.querySelector('[data-pdfkit-tab].active, .tab-btn.active, [role="tab"][aria-selected="true"]');
+    return btn ? cleanTabName(btn.getAttribute('data-pdfkit-tab') || btn.textContent) : '';
+  }
+  function isIOS(){
+    const ua = navigator.userAgent || '';
+    return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+  function escapeRegex(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+  // ---------- encode/decode form data as ASCII-safe base64 (Unicode-safe) ----------
+  function encodePayload(obj){
+    return btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
+  }
+  function decodePayload(b64){
+    return JSON.parse(decodeURIComponent(escape(atob(b64))));
+  }
+
+  // ---------- read / write every [data-field] inside an area ----------
+  function collect(target, formType){
+    const data = { formType };
+    target.querySelectorAll('[data-field]').forEach(el=>{
+      const key = el.dataset.field;
+      if(el.type === 'checkbox') data[key] = el.checked;
+      else if(el.type === 'radio'){ if(el.checked) data[key] = el.value; else if(!(key in data)) data[key] = ''; }
+      else data[key] = el.value;
+    });
+    return data;
+  }
+  function fill(target, payload){
+    target.querySelectorAll('[data-field]').forEach(el=>{
+      const v = payload[el.dataset.field];
+      if(v === undefined) return;
+      if(el.type === 'checkbox') el.checked = !!v;
+      else if(el.type === 'radio') el.checked = (el.value === v);
+      else el.value = v;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+  }
+
+  // ---------- printable copy of the area ----------
+  // Inputs/textareas are swapped for plain text boxes so long answers print in
+  // full instead of being cut off inside a scrolling field.
+  function buildPreview(target){
+    const clone = target.cloneNode(true);
+    const sel = 'input, textarea, select';
+    const originals = target.querySelectorAll(sel);
+    clone.querySelectorAll(sel).forEach((el, i)=>{
+      const orig = originals[i];
+      const type = (orig.type || '').toLowerCase();
+      if(['hidden', 'file', 'button', 'submit', 'reset', 'image'].includes(type)){ el.remove(); return; }
+      const box = document.createElement(orig.tagName === 'TEXTAREA' ? 'div' : 'span');
+      if(type === 'checkbox' || type === 'radio'){
+        box.className = 'pdfkit-check';
+        box.textContent = orig.checked ? (type === 'radio' ? '◉' : '☑') : (type === 'radio' ? '○' : '☐');
+      }else{
+        box.className = 'pdfkit-value ' + (orig.tagName === 'TEXTAREA' ? 'pdfkit-textarea' : 'pdfkit-input');
+        box.textContent = orig.tagName === 'SELECT'
+          ? (orig.selectedIndex >= 0 ? orig.options[orig.selectedIndex].text : '')
+          : (orig.value || '');
+      }
+      el.replaceWith(box);
+    });
+    clone.querySelectorAll('button, .no-print, [data-pdfkit-guide]').forEach(el=> el.remove());
+    clone.removeAttribute('id');
+    clone.querySelectorAll('[id]').forEach(el=> el.removeAttribute('id'));
+    return clone;
+  }
+
+  // ---------- overlay + guide markup (injected once) ----------
+  const IOS_GUIDE_HTML = `
+    <span class="pdfkit-guide-ttl">📱 아이폰·아이패드(사파리)에서 저장하는 방법</span>
+    <ol>
+      <li><b>PDF로 저장하기</b>를 누르고, 미리보기 화면에서 <b>저장하기</b>를 누르세요.</li>
+      <li>인쇄 화면이 뜨면 위쪽의 <b>공유 버튼</b>(네모에서 화살표가 위로 나가는 모양)을 누르세요. 공유 버튼이 안 보이면 아래쪽 작은 페이지 미리보기를 <b>두 손가락으로 벌려 크게</b> 만든 뒤 공유 버튼을 누르세요.</li>
+      <li><b>"파일에 저장"</b>을 누르고 저장할 위치(예: 나의 iPhone → 다운로드)를 고른 뒤 <b>저장</b>을 누르세요.</li>
+      <li>저장한 파일은 <b>"파일" 앱</b>에서 찾을 수 있어요.</li>
+    </ol>`;
+
+  function ensureOverlay(){
+    if(document.getElementById('pdfkitOverlay')) return;
+    const wrap = document.createElement('div');
+    wrap.id = 'pdfkitOverlay';
+    wrap.className = 'pdfkit-overlay';
+    wrap.setAttribute('aria-hidden', 'true');
+    wrap.innerHTML = `
+      <div class="pdfkit-box" role="dialog" aria-modal="true" aria-labelledby="pdfkitTitle">
+        <div class="pdfkit-bar">
+          <div class="pdfkit-bar-top">
+            <div class="pdfkit-title" id="pdfkitTitle">저장될 내용 미리보기</div>
+            <div class="pdfkit-actions">
+              <button type="button" class="pdfkit-cancel">닫기</button>
+              <button type="button" class="pdfkit-save">💾 저장하기</button>
+            </div>
+          </div>
+          <p class="pdfkit-tip" id="pdfkitTip"></p>
+        </div>
+        <div class="pdfkit-body" id="pdfkitBody"></div>
+        <p class="pdfkit-data-note">※ PDF 마지막 장에는 「저장한 PDF 불러오기」에 쓰이는 데이터가 함께 저장돼요.</p>
+        <div class="pdfkit-data">
+          <p class="pdfkit-data-msg">이 페이지는 삭제하지 마세요. 웹앱의 "저장한 PDF 불러오기" 기능으로 이 파일을 다시 열면 위 내용을 자동으로 다시 채울 수 있습니다.</p>
+          <div class="pdfkit-data-code" id="pdfkitDataCode"></div>
+        </div>
+      </div>`;
+    document.body.appendChild(wrap);
+    wrap.querySelector('.pdfkit-cancel').addEventListener('click', close);
+    wrap.querySelector('.pdfkit-save').addEventListener('click', ()=> window.print());
+  }
+
+  function fillGuides(){
+    document.querySelectorAll('[data-pdfkit-guide]').forEach(el=>{
+      el.classList.add('pdfkit-guide');
+      el.innerHTML = IOS_GUIDE_HTML;
+    });
+  }
+
+  // ---------- public: save ----------
+  // opts: { target, formType, tabName?, studentId, studentName }
+  //   target       저장할 영역(요소 또는 id)
+  //   formType     탭 구분값 (불러올 때 다른 탭 파일인지 확인용)
+  //   tabName      파일명에 들어갈 탭 이름 (없으면 현재 활성 탭 버튼 글자)
+  //   studentId / studentName  학번·이름 입력칸(요소 또는 id)
+  function save(opts){
+    const sidEl = $(opts.studentId), nameEl = $(opts.studentName);
+    const sid = sanitize(sidEl && sidEl.value);
+    const sname = sanitize(nameEl && nameEl.value);
+    if(!sid || !sname){
+      alert('학번과 이름을 먼저 입력해 주세요.');
+      (sid ? nameEl : sidEl)?.focus();
+      return;
+    }
+    const target = $(opts.target);
+    const tabName = opts.tabName ? cleanTabName(opts.tabName) : activeTabName();
+
+    ensureOverlay();
+    const body = document.getElementById('pdfkitBody');
+    body.innerHTML = '';
+    body.appendChild(buildPreview(target));
+    document.getElementById('pdfkitDataCode').textContent =
+      DATA_MARKER + encodePayload(collect(target, opts.formType)) + DATA_END;
+
+    document.getElementById('pdfkitTip').innerHTML = isIOS()
+      ? '<b>저장하기</b>를 누른 뒤, 인쇄 화면 위쪽의 <b>공유 버튼</b> → <b>"파일에 저장"</b> → 저장할 위치를 고르고 <b>저장</b>을 누르세요.'
+      : '<b>저장하기</b>를 누른 뒤, 인쇄 창의 대상(프린터)을 <b>"PDF로 저장"</b>으로 바꾸고 <b>저장</b>을 누르면 저장할 위치를 고를 수 있어요. (맥 사파리는 왼쪽 아래 <b>PDF</b> 메뉴 → <b>"PDF로 저장"</b>) <b>"머리글과 바닥글"</b> 옵션은 꺼 주세요.';
+
+    // The browser suggests the page title as the PDF file name.
+    document.title = [sid, sname, tabName].filter(Boolean).join(' ');
+
+    const overlay = document.getElementById('pdfkitOverlay');
+    document.body.classList.add('pdfkit-previewing');
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+    overlay.scrollTop = 0;
+  }
+
+  function close(){
+    const overlay = document.getElementById('pdfkitOverlay');
+    if(!overlay) return;
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('pdfkit-previewing');
+    document.getElementById('pdfkitBody').innerHTML = '';
+    document.title = originalTitle;
+  }
+
+  // ---------- public: load ----------
+  // Use from <input type="file" accept="application/pdf" onchange="PdfKit.load(event, {...})">
+  // opts: { target, formType, formLabels?, onLoaded? }
+  //   formLabels   { formType값: '탭 이름' } — 다른 탭 파일일 때 안내에 사용
+  //   onLoaded     불러온 뒤 실행할 함수 (예: 자동저장 갱신)
+  async function load(event, opts){
+    const input = event.target;
+    const file = input.files && input.files[0];
+    input.value = ''; // allow re-selecting the same file later
+    if(!file) return;
+
+    if(!window.pdfjsLib){
+      alert('PDF 불러오기 기능을 사용할 수 없습니다. 인터넷 연결을 확인하고 새로고침 후 다시 시도해 주세요.');
+      return;
+    }
+    try{
+      const doc = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+      let fullText = '';
+      for(let i = 1; i <= doc.numPages; i++){
+        const content = await (await doc.getPage(i)).getTextContent();
+        fullText += content.items.map(it=> it.str).join('');
+      }
+      // pdf.js splits the wrapped data block into many items (and reports
+      // spaces/line breaks as separate items), so strip all whitespace first.
+      const stripped = fullText.replace(/\s+/g, '');
+      const rx = new RegExp(escapeRegex(DATA_MARKER) + '([A-Za-z0-9+/=]+)' + escapeRegex(DATA_END));
+      const match = stripped.match(rx);
+      if(!match){
+        alert('이 PDF에서 저장된 데이터를 찾을 수 없습니다. 이 웹앱에서 저장한 PDF 파일인지 확인해 주세요.');
+        return;
+      }
+      const payload = decodePayload(match[1]);
+      if(opts.formType && payload.formType !== opts.formType){
+        const label = (opts.formLabels && opts.formLabels[payload.formType]) || '다른';
+        alert('이 PDF는 "' + label + '" 탭의 파일입니다. 해당 탭에서 불러와 주세요.');
+        return;
+      }
+      fill($(opts.target), payload);
+      if(typeof opts.onLoaded === 'function') opts.onLoaded(payload);
+      alert('이전에 저장한 내용을 불러왔습니다.');
+    }catch(err){
+      console.error(err);
+      alert('PDF를 불러오는 중 문제가 발생했습니다. 올바른 PDF 파일인지 확인해 주세요.');
+    }
+  }
+
+  document.addEventListener('keydown', e=>{
+    if(e.key === 'Escape' && document.body.classList.contains('pdfkit-previewing')) close();
+  });
+  function init(){ ensureOverlay(); fillGuides(); }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+
+  return { save, load, close, cleanTabName };
+})();
+
+</script>
 <script>
 (function(){
   const YT={syuka:"슈카월드",jisik:"지식인사이드",motiv:"동기부여학과",sebasi:"세바시 강연",chungco:"충코의 철학",sapiens:"사피엔스 스튜디오",jisikch:"지식채널e",sciencookie:"과학쿠키",unreal:"안될과학"};
@@ -129,9 +562,9 @@ a.src:hover{text-decoration:underline}
   const chips=a=>'<div class="chips">'+(a||[]).map(s=>'<span class="chip">'+esc(s)+'</span>').join("")+'</div>';
   function debate(t){const i=t.indexOf(" vs ");const a=i<0?t:t.slice(0,i),b=i<0?"":t.slice(i+4);
     return '<div class="debate"><div class="p"><i>찬성 측</i>'+esc(a)+'</div><div class="c"><i>반대 측</i>'+esc(b)+'</div></div>';}
-  function item(n,it,yt){const qs=Array.isArray(it.q)?it.q:[it.q];
+  function item(n,it,yt,wide){const qs=Array.isArray(it.q)?it.q:[it.q];
     const meta=yt?(YT[it.ch]||it.ch)+" · 유튜브":it.src;
-    return '<details'+(yt?' class="yt"':'')+'><summary><span class="num">'+n+'</span><span class="tt">'+esc(it.t)+'<small>'+esc(meta)+'</small></span>'+chev+'</summary><div class="body">'+
+    return '<details'+(yt?' class="yt"':'')+'><summary>'+(wide?'':'<span class="num">'+n+'</span>')+'<span class="tt">'+(wide?n+'<br>':'')+esc(it.t)+'<small>'+esc(meta)+'</small></span>'+chev+'</summary><div class="body">'+
       '<div class="blk"><b>내용 요약</b>'+esc(it.sum)+'</div>'+
       '<div class="blk"><b>탐구 이슈</b><ul>'+qs.map(q=>'<li>'+esc(q)+'</li>').join("")+'</ul></div>'+
       '<div class="blk"><b>쟁점 이슈 (토론해 보기)</b>'+debate(it.d||"")+'</div>'+
@@ -153,7 +586,104 @@ a.src:hover{text-decoration:underline}
     h+='<p class="foot">뉴스 출처: 한국언론진흥재단 빅카인즈(오늘의 이슈·뉴스검색) 및 각 언론사 원문 · 영상 요약은 각 채널의 영상 소개글과 목차를 바탕으로 정리했습니다. 투자 관련 영상은 금융 개념 이해용이며 투자 권유가 아닙니다.</p>';
     $("brief").innerHTML=h;
   }
+  /* ---------- 검색 · 스크랩 ---------- */
+  const ALL={}; let allLoaded=null, mode="day";
+  const SKEY="sisa-scrap-v1", STU="sisa-student-v1";
+  let scraps=[]; try{scraps=JSON.parse(localStorage.getItem(SKEY)||"[]")||[];}catch(e){scraps=[];}
+  function saveScraps(){ try{localStorage.setItem(SKEY,JSON.stringify(scraps));}catch(e){} updateBar(); }
+  function loadAll(){
+    if(!allLoaded) allLoaded=Promise.all(dates.map(k=>fetch("data/"+k+".json"+bust).then(r=>r.json()).then(d=>{ALL[k]=d;}).catch(()=>null)));
+    return allLoaded;
+  }
+  function itemsOf(k){const d=ALL[k]; if(!d) return [];
+    return (d.news||[]).map((it,i)=>({id:k+"_n"+i,date:k,yt:false,it})).concat((d.yt||[]).map((it,i)=>({id:k+"_y"+i,date:k,yt:true,it})));}
+  function findItem(id){return itemsOf(id.slice(0,10)).find(x=>x.id===id);}
+  const dlabel=k=>Number(k.slice(5,7))+"월 "+Number(k.slice(8))+"일";
+  function fillFilters(){
+    const ms=[...new Set(dates.map(s=>s.slice(0,7)))].sort().reverse();
+    $("fMonth").innerHTML='<option value="">전체</option>'+ms.map(m=>'<option value="'+m+'">'+m.slice(0,4)+'년 '+Number(m.slice(5))+'월</option>').join("");
+    const subs=new Set(); dates.forEach(k=>itemsOf(k).forEach(x=>(x.it.sub||[]).forEach(s=>subs.add(s))));
+    $("fSub").innerHTML='<option value="">전체</option>'+[...subs].sort((a,b)=>a.localeCompare(b,"ko")).map(s=>'<option>'+esc(s)+'</option>').join("");
+  }
+  function updateBar(){
+    $("scrapCount").textContent=scraps.length; $("myScrapN").textContent=scraps.length;
+    const on=mode==="search"&&scraps.length>0;
+    $("scrapBar").classList.toggle("on",on); document.body.classList.toggle("has-bar",on);
+  }
+  async function search(){
+    mode="search"; updateBar(); $("brief").innerHTML='<p class="loading">검색 중…</p>'; await loadAll();
+    const cat=$("fCat").value, mon=$("fMonth").value, sub=$("fSub").value, kw=$("fKw").value.trim();
+    const words=kw.toLowerCase().split(/\s+/).filter(Boolean);
+    const res=[];
+    [...dates].reverse().forEach(k=>{ if(mon&&k.slice(0,7)!==mon) return;
+      itemsOf(k).forEach(x=>{const it=x.it;
+        if(cat&&it.cat!==cat) return;
+        if(sub&&!(it.sub||[]).includes(sub)) return;
+        if(words.length){const hay=[it.t,it.sum,(Array.isArray(it.q)?it.q.join(" "):it.q),it.d,(it.sub||[]).join(" "),it.src,YT[it.ch],it.cat,it.rel&&it.rel.t].join(" ").toLowerCase();
+          if(!words.every(w=>hay.includes(w))) return;}
+        res.push(x);});});
+    const cond=[cat&&"분야: "+cat, mon&&"월: "+mon.slice(0,4)+"년 "+Number(mon.slice(5))+"월", sub&&"과목: "+sub, kw&&"검색어: "+kw].filter(Boolean).join(" · ")||"전체";
+    let h='<div class="res-head"><h2>검색 결과 '+res.length+'건</h2><small>'+esc(cond)+'</small></div>'+
+      '<p class="note">왼쪽 <b>스크랩</b> 칸을 체크하면 기사·영상이 스크랩 모음에 담겨요. 화면 아래 녹색 막대에서 모아 보고 PDF로 저장할 수 있어요.</p>';
+    if(!res.length) h+='<div class="empty">조건에 맞는 기사·영상이 없습니다. 조건을 바꿔 다시 검색해 보세요.</div>';
+    h+=res.map(x=>'<div class="ritem"><label class="scrap-chk"><input type="checkbox" data-scrap="'+x.id+'"'+(scraps.includes(x.id)?' checked':'')+'>스크랩</label>'+
+        item('<span class="badge d">'+dlabel(x.date)+'</span>'+(x.it.cat?'<span class="badge">'+esc(x.it.cat)+'</span>':''), x.it, x.yt, true)+'</div>').join("");
+    $("brief").innerHTML=h;
+  }
+  function sheetItem(x,n){const it=x.it, qs=Array.isArray(it.q)?it.q:[it.q];
+    return '<div class="sitem"><button type="button" class="btn sm rm" data-unscrap="'+x.id+'">빼기</button>'+
+      '<div><span class="badge d">'+n+'. '+dlabel(x.date)+'</span>'+(it.cat?'<span class="badge">'+esc(it.cat)+'</span>':'')+'<span class="badge d">'+esc(x.yt?(YT[it.ch]||"")+" 영상":it.src)+'</span></div>'+
+      '<h3>'+esc(it.t)+'</h3>'+
+      '<div class="blk"><b>내용 요약</b>'+esc(it.sum)+'</div>'+
+      '<div class="blk"><b>탐구 이슈</b><ul>'+qs.map(q=>'<li>'+esc(q)+'</li>').join("")+'</ul></div>'+
+      '<div class="blk"><b>쟁점 이슈</b>'+debate(it.d||"")+'</div>'+
+      '<div class="blk"><b>관련 고등학교 과목</b>'+chips(it.sub)+'</div>'+
+      '<div class="blk"><b>'+(x.yt?"영상 링크":"기사 원문")+'</b><span class="url">'+esc(it.url)+'</span></div>'+
+      (it.rel?'<div class="blk"><b>함께 읽을 관련 뉴스</b>'+esc(it.rel.t)+' ('+esc(it.rel.src)+')<br><span class="url">'+esc(it.rel.url)+'</span></div>':'')+
+      '<div class="blk"><b>나의 생각 메모</b><textarea data-field="memo_'+x.id+'" placeholder="이 기사·영상을 읽고 든 생각, 더 탐구하고 싶은 점을 적어 보세요."></textarea></div></div>';}
+  function sheetValues(){const o={}; document.querySelectorAll('#scrapSheet [data-field]').forEach(el=>{ if(el.dataset.field!=="scrapIds") o[el.dataset.field]=el.value; }); return o;}
+  function rememberSheet(){ try{ localStorage.setItem(STU, JSON.stringify(Object.assign(JSON.parse(localStorage.getItem(STU)||"{}"), sheetValues()))); }catch(_){} }
+  function syncIds(){const h=document.querySelector('#scrapSheet [data-field="scrapIds"]'); if(h) h.value=JSON.stringify(scraps);}
+  async function showScrap(fillFrom){
+    mode="scrap"; updateBar(); await loadAll();
+    const list=scraps.map(findItem).filter(Boolean);
+    $("brief").innerHTML='<div class="res-head"><h2>📌 나의 스크랩 '+list.length+'개</h2><button type="button" class="btn sm" id="backSearch">← 검색 결과로</button></div>'+
+      '<div class="save-row" style="margin:0 0 12px"><button type="button" class="btn" id="loadBtn">📂 저장한 PDF 불러오기</button></div>'+
+      '<div class="scrap-sheet" id="scrapSheet"><h2>시사 이슈 스크랩</h2><p class="by2">시사 이슈 브리핑 · 배포: 상일고 진로쌤</p>'+
+      '<div class="stu"><label>학번 <input id="sid" data-field="studentId" inputmode="numeric" autocomplete="off" placeholder="예: 20101"></label><label>이름 <input id="sname" data-field="studentName" autocomplete="off" placeholder="예: 홍길동"></label></div>'+
+      '<input type="hidden" data-field="scrapIds">'+
+      (list.length?list.map((x,i)=>sheetItem(x,i+1)).join(""):'<div class="empty no-print">아직 스크랩한 기사·영상이 없어요. 검색 결과에서 스크랩 칸을 체크해 보세요.</div>')+'</div>'+
+      '<div class="save-row"><button type="button" class="btn pri" id="pdfBtn">📄 PDF로 저장하기</button></div><div class="pdfkit-guide">'+$("guideTpl").innerHTML+'</div>'+
+      '<p class="save-note">학번과 이름을 입력한 후 저장하면 파일 이름이 "학번 이름 시사 이슈 스크랩.pdf" 로 정해지고, 저장할 위치는 직접 고를 수 있어요</p>';
+    let saved={}; try{saved=JSON.parse(localStorage.getItem(STU)||"{}");}catch(_){}
+    const src=fillFrom||saved;
+    document.querySelectorAll('#scrapSheet [data-field]').forEach(el=>{const f=el.dataset.field; if(f!=="scrapIds"&&src[f]!==undefined) el.value=src[f];});
+    syncIds();
+    window.scrollTo({top:Math.max(0,$("brief").getBoundingClientRect().top+window.scrollY-10),behavior:"smooth"});
+  }
+  document.addEventListener("input",e=>{ if(e.target.closest&&e.target.closest("#scrapSheet")) rememberSheet(); });
+  document.addEventListener("change",e=>{const c=e.target.closest&&e.target.closest("input[data-scrap]"); if(!c) return;
+    const id=c.dataset.scrap; scraps=scraps.filter(s=>s!==id); if(c.checked) scraps.push(id); saveScraps();});
+  document.addEventListener("click",e=>{const t=e.target.closest("button"); if(!t) return;
+    if(t.dataset.unscrap){ rememberSheet(); scraps=scraps.filter(s=>s!==t.dataset.unscrap); saveScraps(); showScrap(); }
+    else if(t.id==="backSearch") search();
+    else if(t.id==="loadBtn") $("loadInput").click();
+    else if(t.id==="pdfBtn"){ if(!scraps.length){ alert("스크랩한 기사·영상이 없어요. 검색 결과에서 먼저 스크랩해 주세요."); return; }
+      syncIds(); rememberSheet(); PdfKit.save({target:"scrapSheet",formType:"scrap",tabName:"시사 이슈 스크랩",studentId:"sid",studentName:"sname"}); }
+  });
+  $("loadInput").addEventListener("change",ev=>PdfKit.load(ev,{target:"scrapSheet",formType:"scrap",formLabels:{scrap:"시사 이슈 스크랩"},
+    onLoaded:async p=>{ try{ const ids=JSON.parse(p.scrapIds||"[]"); if(Array.isArray(ids)) { scraps=ids; saveScraps(); } }catch(_){}
+      await showScrap(p); rememberSheet(); }}));
+  $("openScrap").onclick=()=>showScrap();
+  $("myScrap").onclick=()=>showScrap();
+  $("doSearch").onclick=search;
+  $("fKw").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); search(); }});
+  ["fCat","fMonth","fSub"].forEach(id=>$(id).addEventListener("change",search));
+  $("resetSearch").onclick=()=>{ $("fCat").value=""; $("fMonth").value=""; $("fSub").value=""; $("fKw").value="";
+    const k=dates[dates.length-1]; history.replaceState(null,"",location.pathname); view=k.split("-").slice(0,2).map(Number); open(k,false); window.scrollTo({top:0,behavior:"smooth"}); };
+
   async function open(k,push){
+    mode="day"; updateBar();
     sel=k; drawCal();
     $("brief").innerHTML='<p class="loading">불러오는 중…</p>';
     try{const r=await fetch("data/"+k+".json"+bust); if(!r.ok) throw 0; render(await r.json());}
@@ -180,6 +710,7 @@ a.src:hover{text-decoration:underline}
     const h=location.hash.slice(1), k=dates.includes(h)?h:dates[dates.length-1];
     if(!k){$("brief").innerHTML='<div class="empty">아직 브리핑이 없습니다.</div>'; const t=new Date(); view=[t.getFullYear(),t.getMonth()+1]; drawCal(); return;}
     view=k.split("-").slice(0,2).map(Number); open(k,false);
+    loadAll().then(fillFilters);
   }).catch(()=>{$("brief").innerHTML='<div class="empty">브리핑 목록을 불러오지 못했습니다.</div>';});
 })();
 </script>
