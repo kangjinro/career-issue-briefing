@@ -93,7 +93,13 @@ a.src:hover{text-decoration:underline}
 
 /* ---------- 검색 ---------- */
 .search{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 20px}
-.search .row{display:grid;grid-template-columns:repeat(3,1fr) 2fr;gap:8px}
+.search .row{display:grid;grid-template-columns:auto 1fr;gap:10px 12px;align-items:center}
+.search .lab{font-size:.78rem;font-weight:700;color:var(--muted);white-space:nowrap}
+.cats{display:flex;flex-wrap:wrap;gap:6px}
+.cats button{font:inherit;font-size:.82rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer}
+.cats button.on{background:var(--green);border-color:var(--green);color:#fff;font-weight:700}
+.period{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.search input[type=date]{font:inherit;font-size:.88rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 8px;color-scheme:light dark}
 .search label{display:flex;flex-direction:column;font-size:.75rem;color:var(--muted);gap:3px;min-width:0}
 .search select,.search input[type=search]{font:inherit;font-size:.9rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 9px;min-width:0;width:100%}
 .search .btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
@@ -105,7 +111,7 @@ a.src:hover{text-decoration:underline}
 .res-head small{color:var(--muted)}
 .ritem{display:flex;gap:10px;align-items:flex-start}
 .ritem details{flex:1;min-width:0}
-.scrap-chk{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.7rem;color:var(--muted);padding-top:14px;cursor:pointer;user-select:none}
+.scrap-chk{flex:0 0 auto;display:flex;align-items:center;padding-top:16px;cursor:pointer}
 .scrap-chk input{width:20px;height:20px;accent-color:var(--green);cursor:pointer;margin:0}
 .badge{display:inline-block;font-size:.72rem;font-weight:700;border-radius:999px;padding:1px 8px;margin-right:4px;background:var(--green-soft);color:var(--green-ink)}
 .badge.d{background:var(--chip);color:var(--muted)}
@@ -131,7 +137,7 @@ body.has-bar .wrap{padding-bottom:90px}
 .save-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:14px 0 0}
 .save-note{font-size:.8rem;color:var(--muted);text-align:center;margin:6px 0 0}
 @media print{.sitem .blk,.sitem h3{break-inside:avoid}}
-@media (max-width:639px){.search .row{grid-template-columns:1fr 1fr}.search .row label.kw{grid-column:1/-1}}
+@media (max-width:639px){.search .row{grid-template-columns:1fr}.search .lab{margin-bottom:-6px}}
 
 /* ==========================================================================
    PdfKit 스타일 (pdf-save-load-ej)
@@ -278,10 +284,12 @@ body.pdfkit-previewing{overflow:hidden;}
 <div class="wrap">
   <section class="search" aria-label="브리핑 검색">
     <div class="row">
-      <label>분야<select id="fCat"><option value="">전체</option><option>과학기술</option><option>환경</option><option>경제</option><option>사회</option><option>정치외교</option><option>교육</option><option>보건의료</option><option>예술체육</option></select></label>
-      <label>월<select id="fMonth"><option value="">전체</option></select></label>
-      <label>과목연계<select id="fSub"><option value="">전체</option></select></label>
-      <label class="kw">검색어<input type="search" id="fKw" placeholder="예: 인공지능, 기후, 의대" enterkeyhint="search"></label>
+      <span class="lab">분야</span>
+      <div class="cats" id="fCats" role="group" aria-label="분야 (여러 개 선택 가능)"><button type="button" data-cat="" class="on">전체</button><button type="button" data-cat="과학기술">과학기술</button><button type="button" data-cat="환경">환경</button><button type="button" data-cat="경제">경제</button><button type="button" data-cat="사회">사회</button><button type="button" data-cat="정치외교">정치외교</button><button type="button" data-cat="교육">교육</button><button type="button" data-cat="보건의료">보건의료</button><button type="button" data-cat="예술체육">예술체육</button></div>
+      <span class="lab">기간</span>
+      <div class="period"><input type="date" id="fFrom" aria-label="시작 날짜"><span>~</span><input type="date" id="fTo" aria-label="끝 날짜"></div>
+      <span class="lab">검색어</span>
+      <input type="search" id="fKw" placeholder="예: 인공지능, 기후, 의대" enterkeyhint="search">
     </div>
     <div class="btns">
       <button type="button" class="btn pri" id="doSearch">🔍 검색</button>
@@ -580,8 +588,8 @@ const PdfKit = (() => {
       '<details class="hist"><summary><span class="lab">오늘의 역사</span><h3>'+esc(a.title)+'</h3>'+chev+'</summary><div class="hb"><p>'+esc(a.body)+'</p><p class="q">💭 생각해 보기: '+esc(a.q)+'</p>'+chips(a.sub)+'</div></details>'+
       '<h3 class="sec"><span class="dot"></span>오늘의 시사 이슈 '+(d.news||[]).length+' <small>· 빅카인즈 선정</small></h3>';
     if(d.bk_note) h+='<p class="note">'+esc(d.bk_note)+'</p>';
-    const box=(id,html)=>'<div class="ritem"><label class="scrap-chk"><input type="checkbox" data-scrap="'+id+'"'+(scraps.includes(id)?' checked':'')+'>스크랩</label>'+html+'</div>';
-    h+='<p class="note">기사·영상 왼쪽의 <b>스크랩</b> 칸을 체크하면 스크랩 모음에 담기고, 모아서 PDF로 저장할 수 있어요.</p>';
+    const box=(id,html)=>'<div class="ritem"><label class="scrap-chk"><input type="checkbox" data-scrap="'+id+'"'+(scraps.includes(id)?' checked':'')+' aria-label="스크랩" title="스크랩"></label>'+html+'</div>';
+    h+='<p class="note">기사·영상 왼쪽의 <b>체크칸(☑)</b>을 누르면 스크랩 모음에 담기고, 모아서 PDF로 저장할 수 있어요.</p>';
     h+=(d.news||[]).map((it,i)=>box(d.date+"_n"+i,item(i+1,it,false))).join("");
     h+='<h3 class="sec yt"><span class="dot"></span>새로 올라온 추천 영상</h3>';
     h+=(d.yt&&d.yt.length)?d.yt.map((it,i)=>box(d.date+"_y"+i,item(i+1,it,true))).join(""):'<div class="empty">오늘 새로 올라온 추천 영상은 없습니다.</div>';
@@ -602,11 +610,10 @@ const PdfKit = (() => {
   function findItem(id){return itemsOf(id.slice(0,10)).find(x=>x.id===id);}
   const dlabel=k=>Number(k.slice(5,7))+"월 "+Number(k.slice(8))+"일";
   function fillFilters(){
-    const ms=[...new Set(dates.map(s=>s.slice(0,7)))].sort().reverse();
-    $("fMonth").innerHTML='<option value="">전체</option>'+ms.map(m=>'<option value="'+m+'">'+m.slice(0,4)+'년 '+Number(m.slice(5))+'월</option>').join("");
-    const subs=new Set(); dates.forEach(k=>itemsOf(k).forEach(x=>(x.it.sub||[]).forEach(s=>subs.add(s))));
-    $("fSub").innerHTML='<option value="">전체</option>'+[...subs].sort((a,b)=>a.localeCompare(b,"ko")).map(s=>'<option>'+esc(s)+'</option>').join("");
+    if(!dates.length) return;
+    ["fFrom","fTo"].forEach(id=>{ $(id).min=dates[0]; $(id).max=dates[dates.length-1]; });
   }
+  const selCats=()=>[...document.querySelectorAll('#fCats button.on')].map(b=>b.dataset.cat).filter(Boolean);
   function updateBar(){
     $("scrapCount").textContent=scraps.length; $("myScrapN").textContent=scraps.length;
     const on=mode!=="scrap"&&scraps.length>0;
@@ -614,21 +621,21 @@ const PdfKit = (() => {
   }
   async function search(){
     mode="search"; updateBar(); $("brief").innerHTML='<p class="loading">검색 중…</p>'; await loadAll();
-    const cat=$("fCat").value, mon=$("fMonth").value, sub=$("fSub").value, kw=$("fKw").value.trim();
+    const cats=selCats(), kw=$("fKw").value.trim();
+    let from=$("fFrom").value, to=$("fTo").value; if(from&&to&&from>to){ const t=from; from=to; to=t; $("fFrom").value=from; $("fTo").value=to; }
     const words=kw.toLowerCase().split(/\s+/).filter(Boolean);
     const res=[];
-    [...dates].reverse().forEach(k=>{ if(mon&&k.slice(0,7)!==mon) return;
+    [...dates].reverse().forEach(k=>{ if(from&&k<from) return; if(to&&k>to) return;
       itemsOf(k).forEach(x=>{const it=x.it;
-        if(cat&&it.cat!==cat) return;
-        if(sub&&!(it.sub||[]).includes(sub)) return;
+        if(cats.length&&!cats.includes(it.cat)) return;
         if(words.length){const hay=[it.t,it.sum,(Array.isArray(it.q)?it.q.join(" "):it.q),it.d,(it.sub||[]).join(" "),it.src,YT[it.ch],it.cat,it.rel&&it.rel.t].join(" ").toLowerCase();
           if(!words.every(w=>hay.includes(w))) return;}
         res.push(x);});});
-    const cond=[cat&&"분야: "+cat, mon&&"월: "+mon.slice(0,4)+"년 "+Number(mon.slice(5))+"월", sub&&"과목: "+sub, kw&&"검색어: "+kw].filter(Boolean).join(" · ")||"전체";
+    const cond=[cats.length&&"분야: "+cats.join(", "), (from||to)&&"기간: "+(from?dlabel(from):"처음")+" ~ "+(to?dlabel(to):"오늘"), kw&&"검색어: "+kw].filter(Boolean).join(" · ")||"전체";
     let h='<div class="res-head"><h2>검색 결과 '+res.length+'건</h2><small>'+esc(cond)+'</small></div>'+
-      '<p class="note">왼쪽 <b>스크랩</b> 칸을 체크하면 기사·영상이 스크랩 모음에 담겨요. 화면 아래 녹색 막대에서 모아 보고 PDF로 저장할 수 있어요.</p>';
+      '<p class="note">왼쪽 <b>체크칸(☑)</b>을 누르면 기사·영상이 스크랩 모음에 담겨요. 화면 아래 녹색 막대에서 모아 보고 PDF로 저장할 수 있어요.</p>';
     if(!res.length) h+='<div class="empty">조건에 맞는 기사·영상이 없습니다. 조건을 바꿔 다시 검색해 보세요.</div>';
-    h+=res.map(x=>'<div class="ritem"><label class="scrap-chk"><input type="checkbox" data-scrap="'+x.id+'"'+(scraps.includes(x.id)?' checked':'')+'>스크랩</label>'+
+    h+=res.map(x=>'<div class="ritem"><label class="scrap-chk"><input type="checkbox" data-scrap="'+x.id+'"'+(scraps.includes(x.id)?' checked':'')+' aria-label="스크랩" title="스크랩"></label>'+
         item('<span class="badge d">'+dlabel(x.date)+'</span>'+(x.it.cat?'<span class="badge">'+esc(x.it.cat)+'</span>':''), x.it, x.yt, true)+'</div>').join("");
     $("brief").innerHTML=h;
   }
@@ -653,7 +660,7 @@ const PdfKit = (() => {
       '<div class="scrap-sheet" id="scrapSheet"><h2>시사 이슈 스크랩</h2><p class="by2">시사 이슈 브리핑 · 배포: 상일고 진로쌤</p>'+
       '<div class="stu"><label>학번 <input id="sid" data-field="studentId" inputmode="numeric" autocomplete="off" placeholder="예: 20101"></label><label>이름 <input id="sname" data-field="studentName" autocomplete="off" placeholder="예: 홍길동"></label></div>'+
       '<input type="hidden" data-field="scrapIds">'+
-      (list.length?list.map((x,i)=>sheetItem(x,i+1)).join(""):'<div class="empty no-print">아직 스크랩한 기사·영상이 없어요. 기사·영상 왼쪽의 스크랩 칸을 체크해 보세요.</div>')+'</div>'+
+      (list.length?list.map((x,i)=>sheetItem(x,i+1)).join(""):'<div class="empty no-print">아직 스크랩한 기사·영상이 없어요. 기사·영상 왼쪽의 체크칸을 체크해 보세요.</div>')+'</div>'+
       '<div class="save-row"><button type="button" class="btn pri" id="pdfBtn">📄 PDF로 저장하기</button></div><div class="pdfkit-guide">'+$("guideTpl").innerHTML+'</div>'+
       '<p class="save-note">학번과 이름을 입력한 후 저장하면 파일 이름이 "학번 이름 시사 이슈 스크랩.pdf" 로 정해지고, 저장할 위치는 직접 고를 수 있어요</p>';
     let saved={}; try{saved=JSON.parse(localStorage.getItem(STU)||"{}");}catch(_){}
@@ -668,15 +675,21 @@ const PdfKit = (() => {
   document.addEventListener("click",e=>{const t=e.target.closest("button"); if(!t) return;
     if(t.dataset.unscrap){ rememberSheet(); scraps=scraps.filter(s=>s!==t.dataset.unscrap); saveScraps(); showScrap(); }
     else if(t.id==="backSearch"){ if(backTo==="search") search(); else open(sel||dates[dates.length-1],false); }
-    else if(t.id==="pdfBtn"){ if(!scraps.length){ alert("스크랩한 기사·영상이 없어요. 기사·영상 왼쪽의 스크랩 칸을 먼저 체크해 주세요."); return; }
+    else if(t.id==="pdfBtn"){ if(!scraps.length){ alert("스크랩한 기사·영상이 없어요. 기사·영상 왼쪽의 체크칸을 먼저 체크해 주세요."); return; }
       syncIds(); rememberSheet(); PdfKit.save({target:"scrapSheet",formType:"scrap",tabName:"시사 이슈 스크랩",studentId:"sid",studentName:"sname"}); }
   });
   $("openScrap").onclick=()=>showScrap();
   $("myScrap").onclick=()=>showScrap();
   $("doSearch").onclick=search;
   $("fKw").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); search(); }});
-  ["fCat","fMonth","fSub"].forEach(id=>$(id).addEventListener("change",search));
-  $("resetSearch").onclick=()=>{ $("fCat").value=""; $("fMonth").value=""; $("fSub").value=""; $("fKw").value="";
+  $("fCats").addEventListener("click",e=>{const b=e.target.closest("button[data-cat]"); if(!b) return;
+    const all=$("fCats").querySelector('[data-cat=""]');
+    if(!b.dataset.cat){ $("fCats").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===all)); }
+    else { b.classList.toggle("on"); all.classList.toggle("on", !selCats().length); }
+    $("fCats").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x.classList.contains("on")));
+    search(); });
+  ["fFrom","fTo"].forEach(id=>$(id).addEventListener("change",search));
+  $("resetSearch").onclick=()=>{ $("fCats").querySelectorAll("button").forEach(x=>x.classList.toggle("on",!x.dataset.cat)); $("fFrom").value=""; $("fTo").value=""; $("fKw").value="";
     const k=dates[dates.length-1]; history.replaceState(null,"",location.pathname); view=k.split("-").slice(0,2).map(Number); open(k,false); window.scrollTo({top:0,behavior:"smooth"}); };
 
   async function open(k,push){
