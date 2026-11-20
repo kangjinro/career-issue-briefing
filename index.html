@@ -10,10 +10,10 @@
 <style>
 :root{--bg:#f6f7fb;--card:#fff;--ink:#1f2430;--muted:#5d6475;--line:#e3e6ef;--accent:#2f5bea;--accent-soft:#eaf0ff;
 --hist:#8a4b0f;--hist-soft:#fff4e6;--hist-line:#f3d9b8;--pro:#0f7b54;--pro-soft:#e8f7f0;--pro-line:#bfe6d4;--con:#b4233c;--con-soft:#fdecef;--con-line:#f3c5cf;
---yt:#c4302b;--yt-soft:#fdeeee;--chip:#f0f2f7;--sun:#c4302b;--sat:#2f5bea;--green:#00704A;--green-soft:#d4e9e2;--green-ink:#00573a}
+--yt:#c4302b;--yt-soft:#fdeeee;--chip:#f0f2f7;--sun:#c4302b;--sat:#2f5bea;--green:#00704A;--green-soft:#d4e9e2;--green-ink:#00573a;--awk:#5b3fa8;--awk-soft:#f3effc;--awk-line:#dcd2f3}
 @media (prefers-color-scheme:dark){:root{--bg:#14161c;--card:#1d2028;--ink:#e8eaf0;--muted:#a0a6b5;--line:#2e3340;--accent:#7b9bff;--accent-soft:#25304d;
 --hist:#f0b46a;--hist-soft:#2b2218;--hist-line:#4a3a26;--pro:#5fd3a5;--pro-soft:#16302a;--pro-line:#24493f;--con:#ff8b9e;--con-soft:#3a1d24;--con-line:#5a2c36;
---yt:#ff7b74;--yt-soft:#3a1f1e;--chip:#262a34;--sun:#ff7b74;--sat:#7b9bff;--green:#00704A;--green-soft:#1e3d33;--green-ink:#9fd8c2}}
+--yt:#ff7b74;--yt-soft:#3a1f1e;--chip:#262a34;--sun:#ff7b74;--sat:#7b9bff;--green:#00704A;--green-soft:#1e3d33;--green-ink:#9fd8c2;--awk:#c3b0ff;--awk-soft:#231f33;--awk-line:#3d3557}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',system-ui,-apple-system,'Malgun Gothic',sans-serif;line-height:1.65;font-size:16px}
 .wrap{max-width:900px;margin:0 auto;padding:20px 16px 48px}
@@ -51,6 +51,15 @@ details.hist summary .chev{position:absolute;right:16px;top:18px}
 .hist .lab{display:inline-block;font-size:.78rem;font-weight:700;color:#fff;background:var(--hist);border-radius:999px;padding:2px 10px;margin-bottom:6px}
 .hist h3{font-size:1.1rem;margin:2px 0 0;color:var(--hist)}
 .hist p{margin:0 0 8px}.hist .q{font-weight:600}
+details.awake{background:var(--awk-soft);border:1px solid var(--awk-line);border-radius:14px;margin:-12px 0 22px}
+details.awake+details.awake{margin-top:-14px}
+details.awake summary{display:block;padding:14px 18px;position:relative;padding-right:44px}
+details.awake summary .chev{position:absolute;right:16px;top:18px}
+.awake .hb{padding:0 18px 14px}
+.awake .lab{display:inline-block;font-size:.78rem;font-weight:700;color:#fff;background:var(--awk);border-radius:999px;padding:2px 10px;margin-bottom:6px}
+.awake h3{font-size:1.05rem;margin:2px 0 0;color:var(--awk)}
+.awake p{margin:0 0 8px}.awake .q{font-weight:600}
+.awake a.src{color:var(--awk)}
 h3.sec{font-size:1.05rem;margin:26px 0 10px;display:flex;align-items:center;gap:8px}
 h3.sec .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
 h3.sec.yt .dot{background:var(--yt)}
@@ -586,6 +595,7 @@ const PdfKit = (() => {
     let h='<h2 class="dtitle">'+m+'월 '+dd+'일 ('+esc(d.dow)+') 시사 이슈 브리핑</h2>'+
       '<p class="sub">'+(rangeText(d)?esc(rangeText(d))+' · ':'')+'제목을 누르면 요약 · 탐구 이슈 · 쟁점 · 관련 과목이 펼쳐집니다.</p>'+
       '<details class="hist"><summary><span class="lab">오늘의 역사</span><h3>'+esc(a.title)+'</h3>'+chev+'</summary><div class="hb"><p>'+esc(a.body)+'</p><p class="q">💭 생각해 보기: '+esc(a.q)+'</p>'+chips(a.sub)+'</div></details>'+
+      (d.awake||[]).map(w=>'<details class="awake"><summary><span class="lab">명언 AWAKE</span><h3>'+esc(w.t)+'</h3>'+chev+'</summary><div class="hb"><p>'+esc(w.sum)+'</p><p class="q">💭 생각해 보기: '+esc(w.q)+'</p><a class="src" href="'+esc(w.url)+'" target="_blank" rel="noopener">▶ 영상 보러 가기 ↗</a></div></details>').join("")+
       '<h3 class="sec"><span class="dot"></span>오늘의 시사 이슈 '+(d.news||[]).length+' <small>· 빅카인즈 선정</small></h3>';
     if(d.bk_note) h+='<p class="note">'+esc(d.bk_note)+'</p>';
     const box=(id,html)=>'<div class="ritem"><label class="scrap-chk"><input type="checkbox" data-scrap="'+id+'"'+(scraps.includes(id)?' checked':'')+' aria-label="스크랩" title="스크랩"></label>'+html+'</div>';

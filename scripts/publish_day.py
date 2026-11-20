@@ -3,7 +3,7 @@
 
 사용법:
   python scripts/publish_day.py 새브리핑.json [--no-push]
-JSON 형식은 data/2026-11-09.json 과 같다 (date, dow, range, anniv, bk_note, news[5], yt[]).
+JSON 형식은 data/2026-11-09.json 과 같다 (date, dow, range, anniv, bk_note, news[5], yt[], 선택 awake[]).
 """
 import json, os, subprocess, sys
 
@@ -20,6 +20,10 @@ def check(d):
         for k in ("t", "url", "sum", "q", "d", "sub", "cat"):
             if not it.get(k):
                 raise SystemExit(f"항목 '{it.get('t')}' 에 {k} 없음")
+    for it in d.get("awake", []):  # 명언 AWAKE (선택, 없으면 빈 배열이나 생략)
+        for k in ("t", "url", "sum", "q"):
+            if not it.get(k):
+                raise SystemExit(f"명언 AWAKE '{it.get('t')}' 에 {k} 없음")
 
 
 def rebuild_index():
